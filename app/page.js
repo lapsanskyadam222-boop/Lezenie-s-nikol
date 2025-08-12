@@ -1,7 +1,5 @@
 "use client";
-
 import { useEffect, useMemo, useState } from "react";
-import PdfViewer from "./PdfViewer";
 
 const TIME_SLOTS = ["13:00", "14:45", "16:15", "18:00", "19:45"];
 const STORAGE_KEY = "reservations_v1";
@@ -18,7 +16,6 @@ export default function Page() {
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
   const [reservations, setReservations] = useState([]);
-  const [showReservation, setShowReservation] = useState(false); // skryté, kým nedoscrolluješ PDF
 
   useEffect(() => {
     try {
@@ -49,6 +46,7 @@ export default function Page() {
     if (!name.trim()) return setError("Zadajte meno.");
     if (!/^\+?[0-9\s-]{6,}$/.test(phone))
       return setError("Zadajte platné telefónne číslo.");
+
     if (reservations.some((r) => r.date === date && r.time === time)) {
       return setError("Tento termín je už obsadený.");
     }
@@ -80,19 +78,12 @@ export default function Page() {
         }}
       >
         <strong>Lezenie s Nikol</strong>
-        {!showReservation && (
-          <span style={{ color: "#6b7280", fontSize: 14 }}>
-            Scrolluj PDF a na konci sa zobrazí rezervačný formulár
-          </span>
-        )}
-        {showReservation && (
-          <a href="#rezervacia" style={{ marginLeft: "auto", color: "#2563eb" }}>
-            Prejsť na rezerváciu
-          </a>
-        )}
+        <a href="#rezervacia" style={{ marginLeft: "auto", color: "#2563eb" }}>
+          Rezervácia
+        </a>
       </header>
 
-      {/* PDF vyrenderované do stránky – keď sa objaví jeho koniec, ukážeme rezerváciu */}
+      {/* PDF v stránke – vlastný scroll len v rámci PDF, formulár je pod ním */}
       <section
         style={{
           border: "1px solid #e5e7eb",
@@ -101,14 +92,15 @@ export default function Page() {
           boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
         }}
       >
-        <PdfViewer
+        <embed
           src="/LEZENIE-S-NIKOL-WEB-bez-konca.pdf"
-          onEndVisible={() => setShowReservation(true)}
+          type="application/pdf"
+          style={{ width: "100%", height: "85vh", border: 0, display: "block" }}
         />
       </section>
 
-      {/* REZERVÁCIA – skrytá, kým nedoscrolluješ koniec PDF */}
-      <section id="rezervacia" style={{ marginTop: 32, display: showReservation ? "block" : "none" }}>
+      {/* Rezervácia pod PDF */}
+      <section id="rezervacia" style={{ marginTop: 32 }}>
         <h2>Rezervácia stretnutia</h2>
         <p style={{ color: "#6b7280", fontSize: 14 }}>
           Vyberte dátum (iba aktuálny mesiac) a čas, potom zadajte meno a telefónne číslo.
